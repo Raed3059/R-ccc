@@ -1,4 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
+require('dotenv').config();
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -6,33 +8,29 @@ const client = new Client({
     ]
 });
 
-// ID الروم الصوتي
 const voiceChannelId = '1408547869723721758';
 
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
-
-    // تحديث الاسم أول مرة عند تشغيل البوت
     updateMemberCount();
-
-    // كل دقيقة يحدث الاسم تلقائي
-    setInterval(updateMemberCount, 60000);
+    setInterval(updateMemberCount, 60000); // تحديث كل دقيقة
 });
 
 async function updateMemberCount() {
-    const guild = client.guilds.cache.first(); // إذا عندك سيرفر واحد
+    const guild = client.guilds.cache.first();
     if (!guild) return;
 
-    await guild.members.fetch(); // تأكد من جلب كل الأعضاء
+    await guild.members.fetch(); // جلب كل الأعضاء
 
-    const memberCount = guild.memberCount;
+    // عد الأعضاء الحقيقيين فقط (بدون البوتات)
+    const humanCount = guild.members.cache.filter(member => !member.user.bot).size;
 
     const channel = guild.channels.cache.get(voiceChannelId);
     if (!channel) return;
 
     try {
-        await channel.setName(`Member: ${memberCount}`);
-        console.log(`Updated voice channel name to: Member: ${memberCount}`);
+        await channel.setName(`Member: ${humanCount}`);
+        console.log(`Updated voice channel name to: Member: ${humanCount}`);
     } catch (error) {
         console.error('Failed to update voice channel name:', error);
     }
